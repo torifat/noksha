@@ -1,17 +1,49 @@
 #!/usr/bin/env node
 require('shelljs/global');
 require('js-yaml');
+require('colors');
 
+var version = '0.0.1';
+var config = 'blueprint';
 
 // Requires git, curl
-['git2', 'curl'].each(fucntion(dep) {
+['git', 'curl'].forEach(function(dep) {
     if(!which(dep)) {
-        echo('Sorry, this script requires ' + dep);
+        console.log(('Sorry, this script requires ' + dep).red);
         exit(1);
     }
 });
 
-var deps = require(pwd() + '/blueprint.yml');
+console.log(('noksha v' + version).blue.inverse);
 
-console.log(deps);
-//console.log(deps);
+try {
+    var deps = require(pwd() + '/' + config + '.yml');
+} catch (err) {
+    switch(err.code) {
+        case 'MODULE_NOT_FOUND':
+            console.log(('Error - No ' + config + '.yml found on the current directory').red);
+            break;
+        default:
+            console.log(('Check your ' + config + '.yml').red);
+    }
+    exit(1);
+}
+for(var name in deps) {
+    console.log(('Processing ' + name).blue);
+    var dep = deps[name];
+    if(dep) {
+        // Prefer git over web as a source
+        // Git
+        if(dep.hasOwnProperty('git')) {
+            console.log('Using git repo as source');
+        }
+        // Web
+        else if(dep.hasOwnProperty('web')) {
+            console.log('Using web as source');
+        } else {
+            console.log('Invalid rule'.red);
+        }
+    } else {
+        console.log(('Invalid rule for ' + name.inverse).red);
+    }
+}

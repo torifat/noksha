@@ -2,6 +2,8 @@ jquery:
     web:    http://code.jquery.com/jquery.js
     target: js/libs/jquery.js
 
+lol:
+
 backbone:
     git:    https://github.com/documentcloud/backbone
     source: backbone.js
