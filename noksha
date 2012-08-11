@@ -19,12 +19,10 @@ console.log(('noksha v' + version).blue.inverse);
 try {
     var deps = require(pwd() + '/' + config + '.yml');
 } catch (err) {
-    switch(err.code) {
-        case 'MODULE_NOT_FOUND':
-            console.log(('Error - No ' + config + '.yml found on the current directory').red);
-            break;
-        default:
-            console.log(('Check your ' + config + '.yml').red);
+    if(err.code === 'MODULE_NOT_FOUND') {
+        console.log(('Error - No ' + config + '.yml found on the current directory').red);
+    } else {
+        console.log(('Check your ' + config + '.yml').red);
     }
     exit(1);
 }
@@ -32,14 +30,20 @@ for(var name in deps) {
     console.log(('Processing ' + name).blue);
     var dep = deps[name];
     if(dep) {
-        // Prefer git over web as a source
-        // Git
+        // Prefer using git over web as a source
         if(dep.hasOwnProperty('git')) {
             console.log('Using git repo as source');
         }
         // Web
         else if(dep.hasOwnProperty('web')) {
             console.log('Using web as source');
+            if(dep.hasOwnProperty('target')) {
+                var path = exec('dirname ' + dep.target, {silent:true}).output.trim();
+                if(!test('-d', path)) {
+                    console.log(('Creating directory - ' + path).green);
+                    mkdir('-p', path);
+                }
+            }
         } else {
             console.log('Invalid rule'.red);
         }
