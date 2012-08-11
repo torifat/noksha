@@ -1,0 +1,25 @@
+{
+  "name": "noksha",
+  "version": "0.0.1",
+  "description": "dependency manager",
+  "main": "noksha",
+  "dependencies": {
+    "js-yaml": "~1.0.2",
+    "shelljs": "~0.0.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/torifat/noksha"
+  },
+  "keywords": [
+    "noksha",
+    "blueprint",
+    "dependency"
+  ],
+  "author": "Rifat Nabi",
+  "license": "BSD"
+}

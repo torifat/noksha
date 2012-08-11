@@ -1,0 +1,8 @@
+jquery:
+    web:    http://code.jquery.com/jquery.js
+    target: js/libs/jquery.js
+
+backbone:
+    git:    https://github.com/documentcloud/backbone
+    source: backbone.js
+    target: js/libs/backbone.js

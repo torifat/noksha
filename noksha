@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+require('shelljs/global');
+require('js-yaml');
+
+
+// Requires git, curl
+['git2', 'curl'].each(fucntion(dep) {
+    if(!which(dep)) {
+        echo('Sorry, this script requires ' + dep);
+        exit(1);
+    }
+});
+
+var deps = require(pwd() + '/blueprint.yml');
+
+console.log(deps);
+//console.log(deps);
