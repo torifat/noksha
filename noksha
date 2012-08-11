@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-var fs      = require('fs'),
-    url     = require('url'),
-    http    = require('http'),
-    sh      = require('shelljs'),
-    yml     = require('js-yaml'),
-    color   = require('colors');
+var fs          = require('fs'),
+    url         = require('url'),
+    http        = require('http'),
+    sh          = require('shelljs'),
+    yml         = require('js-yaml'),
+    color       = require('colors'),
+    progress    = require('progress');
 
 // Essential Functions
 var download_file_httpget = function(file_url, destination) {
@@ -22,11 +23,21 @@ var download_file_httpget = function(file_url, destination) {
     }
     var file = fs.createWriteStream(destination);
 
-    http.get(options, function(res) {
-        res.on('data', function(data) {
-            file.write(data);
+    http.get(options, function(response) {
+        var len = parseInt(response.headers['content-length'], 10);
+        var bar = new progress('Downloading [:bar] :percent :etas', {
+            complete: '=',
+            incomplete: ' ',
+            width: 20,
+            total: len
+        });
+
+        response.on('data', function(chunk) {
+            bar.tick(chunk.length);
+            file.write(chunk);
         }).on('end', function() {
             file.end();
+            console.log('\n');
             console.log('File downloaded to ' + file_name);
         });
     });
