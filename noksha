@@ -47,6 +47,8 @@ var download_file_httpget = function(name, file_url, destination) {
 
 var version = '0.0.1';
 var config = 'blueprint';
+var tmpDir = sh.tempdir() + 'noksha/';
+console.log(tmpDir);
 
 // Requires git
 ['git'].forEach(function(dep) {
@@ -75,6 +77,15 @@ for(var name in deps) {
         // Prefer using git over web as a source
         if(dep.hasOwnProperty('git')) {
             console.log('Using git repo as source');
+            var gitDir = tmpDir + name + '/';
+            if(sh.exec('git clone ' + dep.git + ' ' + gitDir).code !== 0) {
+              console.log('Error: Git clone failed'.red);
+              sh.exit(1);
+            }
+            console.log('Cloning done');
+            sh.cp('-Rf', gitDir + dep.source, sh.pwd() + '/' + dep.target);
+            console.log('File(s) sucessfully copies to destination'.green);
+            sh.rm('-rf', gitDir);
         }
         // Web
         else if(dep.hasOwnProperty('web')) {

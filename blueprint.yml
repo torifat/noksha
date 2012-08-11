@@ -3,6 +3,6 @@ jquery:
     target: js/libs/jquery.js
 
 backbone:
-    git:    https://github.com/documentcloud/backbone
+    git:    git://github.com/documentcloud/backbone.git
     source: backbone.js
     target: js/libs/backbone.js
