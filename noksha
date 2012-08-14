@@ -38,7 +38,7 @@ var download_file_httpget = function(name, file_url, destination) {
         }).on('end', function() {
             file.end();
             console.log('');
-            console.log('File downloaded to ' + file_name);
+            console.log(('File downloaded to ' + file_name).green);
         });
     });
 };
@@ -48,7 +48,6 @@ var download_file_httpget = function(name, file_url, destination) {
 var version = '0.0.1';
 var config = 'blueprint';
 var tmpDir = sh.tempdir() + 'noksha/';
-console.log(tmpDir);
 
 // Requires git
 ['git'].forEach(function(dep) {
@@ -71,7 +70,7 @@ try {
     sh.exit(1);
 }
 for(var name in deps) {
-    console.log(('Processing ' + name).blue);
+    // console.log(('Processing ' + name).blue);
     var dep = deps[name];
     if(dep) {
         // Prefer using git over web as a source
@@ -89,11 +88,11 @@ for(var name in deps) {
         }
         // Web
         else if(dep.hasOwnProperty('web')) {
-            console.log('Using web as source');
+            // console.log('Using web as source');
             if(dep.hasOwnProperty('target')) {
                 var path = sh.exec('dirname ' + dep.target, {silent:true}).output.trim();
                 if(!sh.test('-d', path)) {
-                    console.log(('Creating directory - ' + path).green);
+                    // console.log(('Creating directory - ' + path).green);
                     sh.mkdir('-p', path);
                 }
             }
