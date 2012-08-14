@@ -7,9 +7,10 @@
     "noksha": "./noksha.js"
   },  
   "dependencies": {
-    "js-yaml": "1.0.x",
-    "shelljs": "0.0.x",
-	"colors": "0.4.x"
+    "js-yaml": ">= 1.0.x",
+    "shelljs": ">= 0.0.x",
+	"colors": ">= 0.5.x",
+	"progress": ">= 0.0.x"
   },
   "devDependencies": {},
   "scripts": {
