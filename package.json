@@ -1,8 +1,11 @@
 {
   "name": "noksha",
-  "version": "0.0.1",
-  "description": "dependency manager",
-  "main": "noksha",
+  "version": "0.0.2",
+  "description": "a simple dependency manager",
+  "main": "./noksha.js",
+  "bin": {
+    "noksha": "./noksha.js"
+  },  
   "dependencies": {
     "js-yaml": "~1.0.2",
     "shelljs": "~0.0.6"
@@ -21,5 +24,5 @@
     "dependency"
   ],
   "author": "Rifat Nabi",
-  "license": "BSD"
+  "license": "MIT"
 }
