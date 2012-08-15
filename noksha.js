@@ -14,38 +14,58 @@ var download_file_httpget = function(name, file_url, destination) {
         port: url.parse(file_url).port,
         path: url.parse(file_url).pathname
     };
-
+    
     var file_name;
     if(!destination) {
          file_name = url.parse(file_url).pathname.split('/').pop();
-    } else {
+    }
+    else {
         file_name = destination;
     }
-    var file = fs.createWriteStream(destination);
-
-    http.get(options, function(response) {
+    
+    // HTTPS Protocol
+    if(url.parse(file_url).protocol === 'https:') {
+        var content = sh.exec('curl -s ' + file_url, {silent:true}).output;
+        fs.writeFile(destination, content);
+        return;
+    }
+    // Other Protocols
+    else {
+        http.get(options, function(response) {
+            if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
+                // The location for some (most) redirects will only contain the path, not the hostname; detect this and add the host to the path.
+                if(url.parse(response.headers.location).hostname) {
+                    // Hostname included; make request to res.headers.location
+                    download_file_httpget(name, response.headers.location, destination);
+                }
+                else {
+                    // Hostname not included; get host from requested URL (url.parse()) and prepend to location.
+                    console.log(('Sorry, can not download ' + name).red);
+                    return;
+                }
+            }
+            else {
+                var file = fs.createWriteStream(destination);
+                var len = parseInt(response.headers['content-length'], 10);
+                var bar = new progress('Downloading ' + name + ' [:bar] :percent :etas', {
+                    complete: '=',
+                    incomplete: ' ',
+                    width: 20,
+                    total: len
+                });
+            
+                response.on('data', function(chunk) {
+                    bar.tick(chunk.length);
+                    file.write(chunk);
+                }).on('end', function() {
+                    file.end();
+                    console.log('');
+                    console.log(('File downloaded to ' + file_name).green);
+                });
+            }
+        });
         
-        if(response.statusCode === 301 || response.statusCode === 302) {
-            download_file_httpget(name, response.headers.location, destination);
-        } else {
-            var len = parseInt(response.headers['content-length'], 10);
-            var bar = new progress('Downloading ' + name + ' [:bar] :percent :etas', {
-                complete: '=',
-                incomplete: ' ',
-                width: 20,
-                total: len
-            });
-
-            response.on('data', function(chunk) {
-                bar.tick(chunk.length);
-                file.write(chunk);
-            }).on('end', function() {
-                file.end();
-                console.log('');
-                console.log(('File downloaded to ' + file_name).green);
-            });
-        }
-    });
+    }
 };
 
 // Noksha Started
@@ -54,7 +74,7 @@ var config = 'blueprint';
 var tmpDir = sh.tempdir() + 'noksha/';
 
 // Requires git
-['git'].forEach(function(dep) {
+['git', 'curl'].forEach(function(dep) {
     if(!sh.which(dep)) {
         console.log(('Sorry, this script requires ' + dep).red);
         sh.exit(1);
@@ -68,7 +88,8 @@ try {
 } catch (err) {
     if(err.code === 'MODULE_NOT_FOUND') {
         console.log(('Error - No ' + config + '.yml found on the current directory').red);
-    } else {
+    }
+    else {
         console.log(('Check your ' + config + '.yml').red);
     }
     sh.exit(1);
@@ -101,10 +122,12 @@ for(var name in deps) {
                 }
             }
             download_file_httpget(name, dep.web, dep.target);
-        } else {
+        }
+        else {
             console.log('Invalid rule'.red);
         }
-    } else {
+    }
+    else {
         console.log(('Invalid rule for ' + name.inverse).red);
     }
 }
