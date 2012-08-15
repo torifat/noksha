@@ -24,28 +24,32 @@ var download_file_httpget = function(name, file_url, destination) {
     var file = fs.createWriteStream(destination);
 
     http.get(options, function(response) {
-        var len = parseInt(response.headers['content-length'], 10);
-        var bar = new progress('Downloading ' + name + ' [:bar] :percent :etas', {
-            complete: '=',
-            incomplete: ' ',
-            width: 20,
-            total: len
-        });
+        
+        if(response.statusCode === 301 || response.statusCode === 302) {
+            download_file_httpget(name, response.headers.location, destination);
+        } else {
+            var len = parseInt(response.headers['content-length'], 10);
+            var bar = new progress('Downloading ' + name + ' [:bar] :percent :etas', {
+                complete: '=',
+                incomplete: ' ',
+                width: 20,
+                total: len
+            });
 
-        response.on('data', function(chunk) {
-            bar.tick(chunk.length);
-            file.write(chunk);
-        }).on('end', function() {
-            file.end();
-            console.log('');
-            console.log(('File downloaded to ' + file_name).green);
-        });
+            response.on('data', function(chunk) {
+                bar.tick(chunk.length);
+                file.write(chunk);
+            }).on('end', function() {
+                file.end();
+                console.log('');
+                console.log(('File downloaded to ' + file_name).green);
+            });
+        }
     });
 };
 
 // Noksha Started
-
-var version = '0.0.1';
+var version = '0.0.2';
 var config = 'blueprint';
 var tmpDir = sh.tempdir() + 'noksha/';
 
