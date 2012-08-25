@@ -2,6 +2,7 @@
 var fs          = require('fs'),
     url         = require('url'),
     http        = require('http'),
+    https       = require('https'),
     sh          = require('shelljs'),
     yml         = require('js-yaml'),
     color       = require('colors'),
@@ -23,63 +24,66 @@ var download_file_httpget = function(name, file_url, destination) {
         file_name = destination;
     }
     
+    var handler;
     // HTTPS Protocol
     if(url.parse(file_url).protocol === 'https:') {
-        var content = sh.exec('curl -s ' + file_url, {silent:true}).output;
-        fs.writeFile(destination, content);
-        return;
+        handler = https;
     }
-    // Other Protocols
     else {
-        http.get(options, function(response) {
-            if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
-                // The location for some (most) redirects will only contain the path, not the hostname; detect this and add the host to the path.
-                if(url.parse(response.headers.location).hostname) {
-                    // Hostname included; make request to res.headers.location
-                    download_file_httpget(name, response.headers.location, destination);
-                }
-                else {
-                    // Hostname not included; get host from requested URL (url.parse()) and prepend to location.
-                    console.log(('Sorry, can not download ' + name).red);
-                    return;
-                }
+        handler = http;
+    }
+    
+    handler.get(options, function(response) {
+        if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
+            // The location for some (most) redirects will only contain the path, not the hostname; detect this and add the host to the path.
+            if(url.parse(response.headers.location).hostname) {
+                // Hostname included; make request to res.headers.location
+                download_file_httpget(name, response.headers.location, destination);
             }
             else {
-                var file = fs.createWriteStream(destination);
-                var len = parseInt(response.headers['content-length'], 10);
+                // Hostname not included; get host from requested URL (url.parse()) and prepend to location.
+                console.log(('Sorry, can not download ' + name).red);
+                return;
+            }
+        }
+        else {
+            var file = fs.createWriteStream(destination);
+            var len = parseInt(response.headers['content-length'], 10);
+            if (len) {
                 var bar = new progress('Downloading ' + name + ' [:bar] :percent :etas', {
                     complete: '=',
                     incomplete: ' ',
                     width: 20,
                     total: len
-                });
-            
-                response.on('data', function(chunk) {
-                    bar.tick(chunk.length);
-                    file.write(chunk);
-                }).on('end', function() {
-                    file.end();
-                    console.log('');
-                    console.log(('File downloaded to ' + file_name).green);
-                });
+                });   
+            } else {
+                console.log('Downloading ' + name + '...');
             }
-        });
-        
-    }
+            
+            response.on('data', function(chunk) {
+                if (len) {
+                     bar.tick(chunk.length);   
+                }
+                file.write(chunk);
+            }).on('end', function() {
+                file.end();
+                console.log('');
+                console.log(('File downloaded to ' + file_name).green);
+            });
+        }
+    });
 };
 
 // Noksha Started
-var version = '0.0.2';
+var version = require(__dirname + '/package.json').version;
 var config = 'blueprint';
 var tmpDir = sh.tempdir() + 'noksha/';
 
 // Requires git
-['git', 'curl'].forEach(function(dep) {
-    if(!sh.which(dep)) {
-        console.log(('Sorry, this script requires ' + dep).red);
-        sh.exit(1);
-    }
-});
+if(!sh.which('git')) {
+    console.log(('Sorry, this script requires ' + dep).red);
+    sh.exit(1);
+}
 
 console.log(('noksha v' + version).blue.inverse);
 
@@ -108,7 +112,7 @@ for(var name in deps) {
             }
             console.log('Cloning done');
             sh.cp('-Rf', gitDir + dep.source, sh.pwd() + '/' + dep.target);
-            console.log('File(s) sucessfully copies to destination'.green);
+            console.log('File(s) successfully copied to destination'.green);
             sh.rm('-rf', gitDir);
         }
         // Web
