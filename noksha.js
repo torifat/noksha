@@ -47,15 +47,21 @@ var download_file_httpget = function(name, file_url, destination) {
             else {
                 var file = fs.createWriteStream(destination);
                 var len = parseInt(response.headers['content-length'], 10);
-                var bar = new progress('Downloading ' + name + ' [:bar] :percent :etas', {
-                    complete: '=',
-                    incomplete: ' ',
-                    width: 20,
-                    total: len
-                });
+                if (len) {
+                    var bar = new progress('Downloading ' + name + ' [:bar] :percent :etas', {
+                        complete: '=',
+                        incomplete: ' ',
+                        width: 20,
+                        total: len
+                    });   
+                } else {
+                    console.log('Downloading ' + name + '...');
+                }
             
                 response.on('data', function(chunk) {
-                    bar.tick(chunk.length);
+                    if (len) {
+                         bar.tick(chunk.length);   
+                    }
                     file.write(chunk);
                 }).on('end', function() {
                     file.end();
