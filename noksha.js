@@ -69,7 +69,7 @@ var download_file_httpget = function(name, file_url, destination) {
 };
 
 // Noksha Started
-var version = '0.0.2';
+var version = require(__dirname + '/package.json').version;
 var config = 'blueprint';
 var tmpDir = sh.tempdir() + 'noksha/';
 
