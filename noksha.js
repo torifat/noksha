@@ -108,7 +108,7 @@ for(var name in deps) {
             }
             console.log('Cloning done');
             sh.cp('-Rf', gitDir + dep.source, sh.pwd() + '/' + dep.target);
-            console.log('File(s) sucessfully copies to destination'.green);
+            console.log('File(s) successfully copied to destination'.green);
             sh.rm('-rf', gitDir);
         }
         // Web
