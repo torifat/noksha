@@ -80,10 +80,13 @@ var config = 'blueprint';
 var tmpDir = sh.tempdir() + 'noksha/';
 
 // Requires git
-if(!sh.which('git')) {
-    console.log(('Sorry, this script requires ' + dep).red);
-    sh.exit(1);
-}
+['git'].forEach(function(dep) {
+    if(!sh.which(dep)) {
+        console.log(('Sorry, this script requires ' + dep).red);
+        sh.exit(1);
+    }
+});
+
 
 console.log(('noksha v' + version).blue.inverse);
 
